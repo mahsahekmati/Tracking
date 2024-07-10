@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Configuration\" />
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Faradid.Tracking.Application\Faradid.Tracking.Application.csproj" />
+    <ProjectReference Include="..\Faradid.Tracking.Domain\Faradid.Tracking.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
