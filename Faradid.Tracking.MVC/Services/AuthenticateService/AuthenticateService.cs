@@ -1,12 +1,16 @@
-﻿using Faradid.Tracking.MVC.Services.Base;
+﻿//using Faradid.Tracking.Identity.Models;
+using Faradid.Tracking.Domain.Entities.ApiResult;
+using Faradid.Tracking.Identity.Models;
+using Faradid.Tracking.MVC.Services.Base;
 using Faradid.Tracking.MVC.Services.LocalStorages;
 using Faradid.Tracking.MVC.ViewModels;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Hanssens.Net;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-//using Faradid.Tracking.Identity.Models;
-using  Faradid.Tracking.MVC.Services.Base;
+
 
 namespace Faradid.Tracking.MVC.Services.AuthenticateService
 {
@@ -21,7 +25,7 @@ namespace Faradid.Tracking.MVC.Services.AuthenticateService
             _httpContextAccessor = httpContextAccessor;
             _jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
         }
-        public async Task<bool> Authenticate(string email, string password)
+        public async Task<ApiResult> Authenticate(string email, string password)
         {
             try
             {
@@ -31,28 +35,37 @@ namespace Faradid.Tracking.MVC.Services.AuthenticateService
                     Password = password
                 };
                 var authenticateResponse = await _client.LoginAsync(authenticateRequest);
-                if (authenticateResponse.Token != string.Empty)
+                var content = JsonConvert.SerializeObject(authenticateResponse.Result);
+                AuthResponse authResponse = JsonConvert.DeserializeObject<AuthResponse>(content);
+                if(authResponse != null)
                 {
-                    var tokenContent = _jwtSecurityTokenHandler.ReadJwtToken(authenticateResponse.Token);
-                    var claims = ParseClaims(tokenContent);
-                    var user = new ClaimsPrincipal(new ClaimsIdentity(claims,
-                        CookieAuthenticationDefaults.AuthenticationScheme));
-                    var login = _httpContextAccessor.HttpContext.SignInAsync(
-                        CookieAuthenticationDefaults.AuthenticationScheme, user);
+                    if (authResponse.Token != string.Empty)
+                    {
+                        var tokenContent = _jwtSecurityTokenHandler.ReadJwtToken(authResponse.Token);
+                        var claims = ParseClaims(tokenContent);
+                        var user = new ClaimsPrincipal(new ClaimsIdentity(claims,
+                            CookieAuthenticationDefaults.AuthenticationScheme));
+                        var login = _httpContextAccessor.HttpContext.SignInAsync(
+                            CookieAuthenticationDefaults.AuthenticationScheme, user);
 
-                    _localStorage.SetStorageValue("token", authenticateResponse.Token);
+                        _localStorage.SetStorageValue("token", authResponse.Token);
 
-                    return true;
+                        return authenticateResponse;
+                    }
                 }
 
-                return false;
+
+                return authenticateResponse;
 
 
             }
-            catch
+            catch(Exception ex)
             {
-
-                return false;
+                ApiResult apiResult = new ApiResult();
+                apiResult.IsSuccess = false;
+                apiResult.ErrorMessages.Add(ex.Message);
+                apiResult.Result = null;
+                return apiResult;
             }
         }
 
@@ -66,7 +79,7 @@ namespace Faradid.Tracking.MVC.Services.AuthenticateService
 
 
 
-        public async Task<bool> Register(RegisterViewModel register)
+        public async Task<ApiResult> Register(RegisterViewModel register)
         {
             RegisterationRequest registrationRequest = new()
             {
@@ -77,12 +90,7 @@ namespace Faradid.Tracking.MVC.Services.AuthenticateService
                 UserName = register.UserName
             };
             var response = await _client.RegisterAsync(registrationRequest);
-            if (!string.IsNullOrEmpty(response.UserId))
-            {
-                return true;
-            }
-
-            return false;
+            return response;
         }
         private IList<Claim> ParseClaims(JwtSecurityToken token)
         {

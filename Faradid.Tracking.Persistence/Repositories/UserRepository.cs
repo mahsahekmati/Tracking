@@ -1,4 +1,4 @@
-﻿using Faradid.Tracking.Application.Interfaces;
+﻿using Faradid.Tracking.Application.Interfaces.Repository;
 using Faradid.Tracking.Domain.Entities.Users;
 using Faradid.Tracking.Persistence.Context;
 using Faradid.Tracking.Persistence.Repositories.Common;
@@ -18,20 +18,22 @@ namespace Faradid.Tracking.Persistence.Repositories
         {
             _trackingDbContext = trackingDbContext;
         }
-
-        public async Task<Users> GetUserByBarcode(string barcode)
+        //این تابع چک میکند بارکد وجود دارد یا نه
+        public async Task<UsersBarcode> FindUserBarcode(string barcode)
         {
             if (string.IsNullOrEmpty(barcode))
             {
                 return null;
             }
-            var userBarcode= await _trackingDbContext.UsersBarcodes.FirstOrDefaultAsync(x => x.Barcode == barcode && x.IsUse==false);
+            var userBarcode = await _trackingDbContext.UsersBarcodes.FirstOrDefaultAsync(x => x.Barcode == barcode);
             if (userBarcode == null)
             {
                 return null;
             }
-            return await _trackingDbContext.Users.SingleOrDefaultAsync(a=>a.Id == userBarcode.UserId);
+            return userBarcode;
         }
+
+
 
     }
 }

@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
@@ -13,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Faradid.Tracking.Application\Faradid.Tracking.Application.csproj" />
     <ProjectReference Include="..\Faradid.Tracking.Domain\Faradid.Tracking.Domain.csproj" />
+    <ProjectReference Include="..\Faradid.Tracking.Identity\Faradid.Tracking.Identity.csproj" />
   </ItemGroup>
 
 </Project>

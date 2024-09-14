@@ -20,6 +20,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Faradid.Tracking.MVC", "Faradid.Tracking.MVC\Faradid.Tracking.MVC.csproj", "{044CD7CC-7555-4CBC-87CF-6E5C48227B91}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Faradid.Tracking.Identity", "Faradid.Tracking.Identity\Faradid.Tracking.Identity.csproj", "{4EC56AA8-6985-464D-B44D-AB3E8B44CAD2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A5138F2C-E195-45FE-9D70-F5BEE28549B3} = {A5138F2C-E195-45FE-9D70-F5BEE28549B3}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Faradid.Tracking.Persistence", "Faradid.Tracking.Persistence\Faradid.Tracking.Persistence.csproj", "{05AEBC53-C3AC-4295-8182-0C3679B19649}"
 EndProject

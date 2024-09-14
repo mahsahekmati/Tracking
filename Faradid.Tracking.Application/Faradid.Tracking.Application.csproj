@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Faradid.Tracking.Domain\Faradid.Tracking.Domain.csproj" />
+    <ProjectReference Include="..\Faradid.Tracking.Identity\Faradid.Tracking.Identity.csproj" />
   </ItemGroup>
 
 </Project>

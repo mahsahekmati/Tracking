@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace Faradid.Tracking.Identity.Migrations
+namespace Faradid.Tracking.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class createidentity : Migration
+    public partial class createdatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,7 +21,8 @@ namespace Faradid.Tracking.Identity.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Discriminator = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -54,6 +55,28 @@ namespace Faradid.Tracking.Identity.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MobileNumber = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
+                    NationalCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    EditDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EditBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -162,13 +185,38 @@ namespace Faradid.Tracking.Identity.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UsersBarcodes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Barcode = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
+                    IsUse = table.Column<bool>(type: "bit", nullable: false),
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    EditDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EditBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UsersBarcodes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UsersBarcodes_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                columns: new[] { "Id", "ConcurrencyStamp", "Discriminator", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { 1, null, "Administrator", "ADMINISTRATOR" },
-                    { 2, null, "Employee", "EMPLOYEE" }
+                    { 1, null, "CustomRole", "Administrator", "ADMINISTRATOR" },
+                    { 2, null, "CustomRole", "Employee", "EMPLOYEE" }
                 });
 
             migrationBuilder.InsertData(
@@ -176,8 +224,8 @@ namespace Faradid.Tracking.Identity.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "FirstName", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { 1, 0, "17148a62-58bc-42a3-89d8-923d7f8756fd", "admin@localhost.com", true, "Admin", "Adminian", false, null, "ADMIN@LOCALHOST.COM", "ADMIN@LOCALHOST.COM", "AQAAAAIAAYagAAAAEJssUk+2f5PRdQrTb7oEVW6iBqr/4F2vH50p6lo+pX6W6m1I6oJTTPnw2fJ+Pjh0xA==", null, false, null, false, "admin@localhost.com" },
-                    { 2, 0, "c945b022-de3e-4377-9100-3517ebaf5bf9", "user@localhost.com", true, "System", "User", false, null, "USER@LOCALHOST.COM", "USER@LOCALHOST.COM", "AQAAAAIAAYagAAAAEN1wpn5GhksUo++UmBfFJLgzz832GKY/f5wimGiDvqpGvocfTOBNYtIfRF/AgF6/ig==", null, false, null, false, "user@localhost.com" }
+                    { 1, 0, "161c54c6-b4c9-48a2-8c4d-4d50e590ba02", "admin@localhost.com", true, "Admin", "Adminian", false, null, "ADMIN@LOCALHOST.COM", "ADMIN@LOCALHOST.COM", "AQAAAAIAAYagAAAAEPaJfAVE3+i9Rdvcry9lB2dhRQRYXfYGf1PCpsGRS1NGJjCgpeYsLwlydSfcRFABqw==", null, false, null, false, "admin@localhost.com" },
+                    { 2, 0, "688d0a6a-6ed7-4703-ad67-8311251b1618", "user@localhost.com", true, "System", "User", false, null, "USER@LOCALHOST.COM", "USER@LOCALHOST.COM", "AQAAAAIAAYagAAAAEMEf6tdc7vPO7RK/Ghj1KK+A0Bc41K8yWXW/DxFUcTdpYf7N9RNH25F0ma5By6IxNA==", null, false, null, false, "user@localhost.com" }
                 });
 
             migrationBuilder.InsertData(
@@ -227,6 +275,11 @@ namespace Faradid.Tracking.Identity.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UsersBarcodes_UserId",
+                table: "UsersBarcodes",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -248,10 +301,16 @@ namespace Faradid.Tracking.Identity.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "UsersBarcodes");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

@@ -29,12 +29,16 @@ namespace Faradid.Tracking.MVC.Controllers
                 return View(register);
             }
 
-            var isCreated = await _authenticateService.Register(register);
-            if (isCreated)
+            var response = await _authenticateService.Register(register);
+            if (response != null) 
             {
-                return LocalRedirect("/");
+                if (response.IsSuccess)
+                {
+                    return LocalRedirect("/");
+                }
             }
-            ModelState.AddModelError("", "Registration Failed.");
+
+            ModelState.AddModelError("", response.ErrorMessages.FirstOrDefault());
             return View(register);
         }
         #endregion
@@ -50,13 +54,16 @@ namespace Faradid.Tracking.MVC.Controllers
         public async Task<IActionResult> Login(LoginViewModel login, string returnUrl)
         {
             returnUrl ??= Url.Content("~/");
-            var isLoggedIn = await _authenticateService.Authenticate(login.Email, login.Passsword);
-            if (isLoggedIn)
+            var response = await _authenticateService.Authenticate(login.Email, login.Passsword);
+            if (response!=null)
             {
+                if (response.IsSuccess)
+                {
                 return LocalRedirect(returnUrl);
+                }
             }
 
-            ModelState.AddModelError("", "Login Failed. Please Try again.");
+            ModelState.AddModelError("", response.ErrorMessages.FirstOrDefault());
             return View(login);
         }
         #endregion

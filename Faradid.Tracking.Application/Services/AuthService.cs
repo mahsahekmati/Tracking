@@ -1,5 +1,6 @@
-﻿using Faradid.Tracking.Identity.Constanse;
-using Faradid.Tracking.Identity.Interfaces;
+﻿using Faradid.Tracking.Domain.Entities.ApiResult;
+using Faradid.Tracking.Identity.Constanse;
+using Faradid.Tracking.Interfaces.Identity;
 using Faradid.Tracking.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -12,7 +13,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Faradid.Tracking.Identity.Services
+namespace Faradid.Tracking.Application.Services
 {
     public class AuthService : IAuthService
     {
@@ -31,19 +32,29 @@ namespace Faradid.Tracking.Identity.Services
 
 
         #region login
-        public async Task<AuthResponse> Login(AuthRequest request)
+        public async Task<ApiResult> Login(AuthRequest request)
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
+            ApiResult apiResult = new ApiResult();
+            apiResult.ErrorMessages=new List<string>();
             if (user == null)
             {
-                throw new Exception($"user with {request.Email} not fount.");
+                apiResult.IsSuccess = false;
+                apiResult.Result = null;
+                apiResult.StatusCode = System.Net.HttpStatusCode.NotFound;
+                apiResult.ErrorMessages.Add("نام کاربری یافت نشد");
+                return apiResult;
             }
 
             var result = await _signInManager.PasswordSignInAsync(user.UserName, request.Password, false, lockoutOnFailure: false);
 
             if (!result.Succeeded)
             {
-                throw new Exception($"credentials for {request.Email} arent valid.");
+                apiResult.IsSuccess = false;
+                apiResult.Result = null;
+                apiResult.StatusCode = System.Net.HttpStatusCode.NotFound;
+                apiResult.ErrorMessages.Add("نام کاربری یا رمز عبور اشتباه است");
+                return apiResult;
             }
 
             JwtSecurityToken jwtSecurityToken = await GenerateToken(user);
@@ -56,7 +67,12 @@ namespace Faradid.Tracking.Identity.Services
                 UserName = user.UserName,
             };
 
-            return response;
+            apiResult.IsSuccess = true;
+            apiResult.Result = response;
+            apiResult.StatusCode = System.Net.HttpStatusCode.OK;
+
+
+            return apiResult;
         }
 
         private async Task<JwtSecurityToken> GenerateToken(ApplicationUser user)
@@ -97,17 +113,28 @@ namespace Faradid.Tracking.Identity.Services
 
 
         #region register
-        public async Task<RegistrationResponse> Register(RegisterationRequest request)
+        public async Task<ApiResult> Register(RegisterationRequest request)
         {
+            ApiResult apiResult = new ApiResult();
+            apiResult.ErrorMessages = new List<string>();
             var existingUser = await _userManager.FindByNameAsync(request.UserName);
             if (existingUser != null)
             {
-                throw new Exception($"user name '{request.UserName}' already exists.");
+
+                apiResult.IsSuccess = false;
+                apiResult.Result = null;
+                apiResult.StatusCode = System.Net.HttpStatusCode.NotFound;
+                apiResult.ErrorMessages.Add("این نام کاربری قبلا در سامانه ثبت نام کرده است");
+                return apiResult;
             }
             var existingEmail = await _userManager.FindByEmailAsync(request.Email);
             if (existingEmail != null)
             {
-                throw new Exception($"Email '{request.Email}' already exists.");
+                apiResult.IsSuccess = false;
+                apiResult.Result = null;
+                apiResult.StatusCode = System.Net.HttpStatusCode.NotFound;
+                apiResult.ErrorMessages.Add("این ایمیل قبلا در سامانه ثبت نام کرده است");
+                return apiResult;
 
             }
             var user = new ApplicationUser
@@ -122,8 +149,13 @@ namespace Faradid.Tracking.Identity.Services
 
             if (result.Succeeded)
             {
+
                 await _userManager.AddToRoleAsync(user, "Employee");
-                return new RegistrationResponse() { UserId = user.Id };
+                RegistrationResponse registrationResponse=   new RegistrationResponse() { UserId = user.Id };
+                apiResult.IsSuccess = true;
+                apiResult.Result = registrationResponse;
+                apiResult.StatusCode = System.Net.HttpStatusCode.OK;
+                return apiResult;
             }
             else
             {
